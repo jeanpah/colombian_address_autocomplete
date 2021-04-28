@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+    <head><meta charset="utf-8">
+    <style>
+        .algolia-autocomplete {
+          width: 100%;
+        }
+        .algolia-autocomplete .aa-input, .algolia-autocomplete .aa-hint {
+          width: 100%;
+        }
+        .algolia-autocomplete .aa-hint {
+          color: #999;
+        }
+        .algolia-autocomplete .aa-dropdown-menu {
+          width: 100%;
+          background-color: #fff;
+          border: 1px solid #999;
+          border-top: none;
+        }
+        .algolia-autocomplete .aa-dropdown-menu .aa-suggestion {
+          cursor: pointer;
+          padding: 5px 4px;
+        }
+        .algolia-autocomplete .aa-dropdown-menu .aa-suggestion.aa-cursor {
+          background-color: #B2D7FF;
+        }
+        .algolia-autocomplete .aa-dropdown-menu .aa-suggestion em {
+          font-weight: bold;
+          font-style: normal;
+        }
+      </style>
+    </head>
+<body>
+<div style="position:relative">
+    <input id="autoComplete">
+</div>
+<div style="position:relative">
+    <input id="dianformat">
+</div>
+
+<script src="dist/index.js"></script>
+<script src="https://cdn.jsdelivr.net/autocomplete.js/0/autocomplete.min.js"></script>
+<script>
+    
+   
+    var search =  autocomplete('#autoComplete', { hint: false }, [
+        {
+          source: function(query, cb){
+            results = window.Sugester.get_sugestions(query)
+            cb(results.sugestions)
+          },
+          displayKey: 'name',
+          templates: {
+            suggestion: function(suggestion) {
+              return suggestion;
+            }
+          }
+        }
+    ])
+    
+    search.on('autocomplete:selected', function(event, suggestion, dataset, context) {
+        search.autocomplete.setVal(suggestion);
+    });
+
+    search.on('keyup', function(event, target) {
+        let response = window.Sugester.get_sugestions(event.target.value);
+        document.getElementById("dianformat").value = response.dian_format
+
+    });
+        /*document.querySelector("#autoComplete").addEventListener("input", function (event) {
+            results = window.Sugester.get_sugestions(this.value)
+            autoCompleteJS.data.src = results.sugestions
+            document.getElementById("dianformat").value = results.dian_format
+            console.log("Total: ", results.errors)
+        });*/
+    
+</script>
+</body>
+</html> 
