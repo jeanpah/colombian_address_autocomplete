@@ -10,7 +10,6 @@ function printobj(object){
     for (var property in object) {
     output += property + ': ' + object[property]+'; ';
     }
-    //console.log("err2",output);
 }
 
 function sugest_for_token(t, str){
@@ -19,7 +18,6 @@ function sugest_for_token(t, str){
     let sugest = [];
     for(var i = 0;i<f_tok.length ; i++){
         let token = f_tok[i];
-        //console.log("TOKEN:", typeof token, token)
         if (token == "S2"){
             sugest = sugest.concat([str + "␣"])
         }else if (token == "BIS"){
@@ -77,21 +75,16 @@ class TestGrammarErrorListener extends antlr4.error.ErrorListener {
         var typeAssistTokens = ["STARTS", "UNITY","S2","CONST", "NUMBERSYMBOL", "DASHSYMBOL","ENDERS","WORD"];
         var parser = recognizer._ctx.parser,
             tokens = parser.getTokenStream().tokens;
-        //console.log("err3",msg)
         // last token is always "fake" EOF token
         if (tokens.length > 1) {
-            //console.log("tokens", tokens.map(element => {return parser.symbolicNames[element.type]}));
             var lastToken = tokens[tokens.length - 2],
                 tokenType = parser.symbolicNames[lastToken.type];
             this.tokenType = tokenType;
-            //console.log("tokentype",tokenType)
             if (typeAssistTokens.indexOf(tokenType) >= 0) {
                 this.partialFruit = lastToken.text;
                 const atn = parser._interp.atn;
                 let ctx = parser._ctx;
                 const s = atn.states[parser.state];
-                //console.log(ctx)
-                //console.log("rule", parser.ruleNames[s.ruleIndex])
                 let following = atn.nextTokens(s);
                 let text = tokens.slice(0,-1).reduce((accumulator, currentValue) => accumulator + currentValue.text, "")
                 let sg = sugest_for_token(
@@ -116,14 +109,11 @@ class DianTranslator extends colombian_direction_grammarListener {
         this.output = "";
     }
     exitAddess(ctx) {
-        //find_token_replacement()
-        //ctx.children[0].getText()
         let parser = ctx.parser;
         for (let child_index in ctx.children){
             
             let symbol = ctx.children[child_index].symbol
             if(symbol === undefined){
-                //console.log("addes",ctx.output_partial);
                 this.output+=ctx.children[child_index].output
             }else{
                 let type = parser.symbolicNames[ctx.children[child_index].symbol.type];
@@ -157,7 +147,6 @@ class DianTranslator extends colombian_direction_grammarListener {
                 else if (type == "DASHSYMBOL"){
                     this.output += "";
                 }
-                //console.log("addes", type, text);
             }
                 
         }
@@ -172,12 +161,10 @@ class DianTranslator extends colombian_direction_grammarListener {
             
             let symbol = ctx.children[child_index].symbol
             if(symbol === undefined){
-                //console.log("addes",ctx.output_partial);
                 ctx.output+=ctx.children[child_index].output
             }else{
                 let type = parser.symbolicNames[ctx.children[child_index].symbol.type];
                 let text = ctx.children[child_index].getText();
-                //console.log(type, text)
                 if (type == "ENDERS"){
                     ctx.output += find_token_replacement(type, text);
                 }else if (type == "S2"){
@@ -194,12 +181,10 @@ class DianTranslator extends colombian_direction_grammarListener {
             
             let symbol = ctx.children[child_index].symbol
             if(symbol === undefined){
-                //console.log("addes",ctx.output_partial);
                 ctx.output+=ctx.children[child_index].output
             }else{
                 let type = parser.symbolicNames[ctx.children[child_index].symbol.type];
                 let text = ctx.children[child_index].getText();
-                console.log(type,text);
 
                 if (type == "WORD"){
                     ctx.output += text.replace(/[\"\"]/g,"").toUpperCase();
@@ -210,11 +195,9 @@ class DianTranslator extends colombian_direction_grammarListener {
                 else if (type == "S2"){
                     ctx.output += " ";
                 }
-                //console.log(type,text);
                 
             }
         }
-        //console.log("complement ", ctx.output);
     }
 }
 
@@ -228,7 +211,6 @@ class TestLexerErrorListener extends antlr4.error.ErrorListener {
 
     
     syntaxError(recognizer, offendingSymbol, line, column, msg, err) {
-        //console.log("err1",msg);
         this.errors.push(arguments);
     }
 }
@@ -247,8 +229,6 @@ export function get_sugestions(s) {
     parser.addErrorListener(el);
     parser.buildParseTrees = true;
     const tree = parser.addess();
-    //console.log(printer.output)
-    //console.log(parser)
     let success = parser._syntaxErrors == 0;
     if (!success){
         return {
