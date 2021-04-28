@@ -14,5 +14,23 @@ export default class colombian_direction_grammarListener extends antlr4.tree.Par
 	}
 
 
+	// Enter a parse tree produced by colombian_direction_grammarParser#extra.
+	enterExtra(ctx) {
+	}
+
+	// Exit a parse tree produced by colombian_direction_grammarParser#extra.
+	exitExtra(ctx) {
+	}
+
+
+	// Enter a parse tree produced by colombian_direction_grammarParser#complement.
+	enterComplement(ctx) {
+	}
+
+	// Exit a parse tree produced by colombian_direction_grammarParser#complement.
+	exitComplement(ctx) {
+	}
+
+
 
 }

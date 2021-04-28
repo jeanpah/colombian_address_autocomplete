@@ -1,25 +1,23 @@
 grammar colombian_direction_grammar;
-addess : UNITY S2 CONST S2 NUMBERSYMBOL S2 CONST S2 DASHSYMBOL S2 CONST S2 UNITY;
+addess : STARTS S2 CONST BIS? S2 NUMBERSYMBOL S2 CONST BIS? S2 DASHSYMBOL S2 CONST (S2 extra)?;
+extra: 
+    ENDERS |
+    ENDERS complement+ ;
 
+complement : S2 UNITY S2 WORD;
 
 CONST:[0-9]+[a-z]?;
+BIS: 'BIS';
+WORD : '"' .+? '"';
 UNITY:'Administraci\u00F3n' |
     'Aeropuerto' |
     'Agrupaci\u00F3n' |
     'Altillo' |
     'Apartamento' |
-    'Autopista' |
-    'Avenida' |
-    'Avenida Calle' |
-    'Avenida Carrera' |
     'Barrio' |
-    'Bis' |
     'Bloque' |
     'Bodega' |
     'Bulevar' |
-    'Calle' |
-    'Carrera' |
-    'Carretera' |
     'Casa' |
     'C\u00E9lula' |
     'Centro Comercial' |
@@ -30,15 +28,13 @@ UNITY:'Administraci\u00F3n' |
     'Consultorio' |
     'Cuentas Corridas' |
     'Deposito' |
-    'Deposito S\u00F3tano' |
-    'Diagonal' |
+    'Deposito S\u00F3tano' |    
     'Edificio' |
     'Entrada' |
     'Esquina' |
     'Etapa' |
     'Estaci\u00F3n' |
     'Exterior' |
-    'Este' |
     'Finca' |
     'Garaje' |
     'Garaje S\u00F3tano' |
@@ -50,8 +46,6 @@ UNITY:'Administraci\u00F3n' |
     'Manzana' |
     'Mezzanine' |
     'M\u00F3dulo' |
-    'Norte' |
-    'Oeste' |
     'Oficina' |
     'Parque' |
     'Parqueadero' |
@@ -64,16 +58,14 @@ UNITY:'Administraci\u00F3n' |
     'Predio' |
     'Porter00EDa' |
     'Puesto' |
-    'Round Point (Glorieta)' |
+    'Round Point' |
     'Semis\u00F3tano' |
     'S\u00F3tano' |
     'Sector' |
     'Suite' |
-    'Supermanzana' |
-    'Sur' |
+    'Supermanzana' | 
     'Terraza' |
-    'Torre' |
-    'Transversal' |
+    'Torre' |    
     'Troncal' |
     'Unidad' |
     'Unidad Residencial' |
@@ -81,6 +73,25 @@ UNITY:'Administraci\u00F3n' |
     'Variante' |
     'V\u00EDa' |
     'Zona';
+
+ENDERS: 
+    'Este' |
+    'Norte' |
+    'Oeste' |
+    'Sur';
+
+STARTS : 
+    'Avenida Calle' |
+    'Avenida Carrera' |
+    'Calle' |
+    'Carrera' |
+    'Carretera' |
+    'Diagonal' |
+    'Transversal';
+
+INCOMPLETESTARTS:
+    'Autopista' |
+    'Avenida';
 
 S2: S+;
 S : ' ';

@@ -12,6 +12,22 @@ console.log(suggestions)
 
 */
 
+var starters = [
+    'Avenida Calle',
+    'Avenida Carrera',
+    'Calle',
+    'Carrera',
+    'Carretera',
+    'Diagonal',
+    'Transversal'
+];
+
+var enders = [
+    'Este',
+    'Norte',
+    'Oeste',
+    'Sur'
+];
 
 var names = [
     'Administración',
@@ -20,17 +36,10 @@ var names = [
     'Altillo',
     'Apartamento',
     'Autopista',
-    'Avenida',
-    'Avenida Calle',
-    'Avenida Carrera',
     'Barrio',
-    'Bis',
     'Bloque',
     'Bodega',
     'Bulevar',
-    'Calle',
-    'Carrera',
-    'Carretera',
     'Casa',
     'Célula',
     'Centro Comercial',
@@ -42,14 +51,12 @@ var names = [
     'Cuentas Corridas',
     'Deposito',
     'Deposito Sótano',
-    'Diagonal',
     'Edificio',
     'Entrada',
     'Esquina',
     'Etapa',
     'Estación',
     'Exterior',
-    'Este',
     'Finca',
     'Garaje',
     'Garaje Sótano',
@@ -61,8 +68,6 @@ var names = [
     'Manzana',
     'Mezzanine',
     'Módulo',
-    'Norte',
-    'Oeste',
     'Oficina',
     'Parque',
     'Parqueadero',
@@ -75,16 +80,14 @@ var names = [
     'Predio',
     'Portería',
     'Puesto',
-    'Round Point (Glorieta)',
+    'Round Point',
     'Semisótano',
     'Sótano',
     'Sector',
     'Suite',
     'Supermanzana',
-    'Sur',
     'Terraza',
     'Torre',
-    'Transversal',
     'Troncal',
     'Unidad',
     'Unidad Residencial',
@@ -99,36 +102,56 @@ function printobj(object){
     for (var property in object) {
     output += property + ': ' + object[property]+'; ';
     }
-    console.log(output);
+    console.log("err2",output);
 }
 
-function sugest_for_token(token, str){
-    console.log("TOKEN:", token)
-    if (token == "S2"){
-        return [str + "␣"]
-    }else if(token == "CONST"){
-        return [str + "[Numero]"]
-    }else if(token == "NUMBERSYMBOL"){
-        return [str + "#"]
-    }
-    else if(token == "DASHSYMBOL"){
-        return [str + "-"]
-    }
-    else if(token == "UNITY"){
-        let sugestions = []
-        for(let sugestion in names){
-            let sug = names[sugestion];
-            sugestions.push(str + sug);
+function sugest_for_token(t, str){
+    let f_tok = t.replace(/[ {}]/g, "")
+    f_tok = f_tok.split(",")
+    let sugest = [];
+    for(var i = 0;i<f_tok.length ; i++){
+        let token = f_tok[i];
+        console.log("TOKEN:", typeof token, token)
+        if (token == "S2"){
+            sugest = sugest.concat([str + "␣"])
+        }else if (token == "BIS"){
+            sugest = sugest.concat([str + "BIS"])
+        }else if(token == "CONST"){
+            sugest = sugest.concat( [str + "[Numero]"] )
+        }else if(token == "NUMBERSYMBOL"){
+            sugest = sugest.concat( [str + "#"] )
         }
-        return sugestions
-    }else if(token == "<EOF>" && str == ""){
-        let sugestions = []
-        for(let sugestion in names){
-            let sug = names[sugestion];
-            sugestions.push(str + sug);
+        else if(token == "DASHSYMBOL"){
+            sugest = sugest.concat( [str + "-"] )
         }
-        return sugestions
+        else if (token == "ENDERS"){
+            let sugestions = []
+            for(let sugestion in enders){
+                let sug = enders[sugestion];
+                sugestions.push(str + sug);
+            }
+            sugest = sugest.concat( sugestions )
+        }
+        else if(token == "UNITY"){
+            let sugestions = []
+            for(let sugestion in names){
+                let sug = names[sugestion];
+                sugestions.push(str + sug);
+            }
+            sugest = sugest.concat( sugestions )
+        }else if(token == "<EOF>" && str == ""){
+            let sugestions = []
+            for(let sugestion in names){
+                let sug = names[sugestion];
+                sugestions.push(str + sug);
+            }
+            sugest = sugest.concat( sugestions )
+        }else if(token == "WORD"){
+            sugest = sugest.concat( [str + "[Palabra entre comillas]"] )
+        }
     }
+    return sugest
+    
 }
 
 class TestGrammarErrorListener extends antlr4.error.ErrorListener {
@@ -143,21 +166,24 @@ class TestGrammarErrorListener extends antlr4.error.ErrorListener {
     syntaxError(recognizer, offendingSymbol, line, column, msg, err) {
         this.errors.push(arguments);
         this.partialFruit = null;
-        var typeAssistTokens = ["UNITY","S2","CONST", "NUMBERSYMBOL", "DASHSYMBOL"];
+        var typeAssistTokens = ["STARTS", "UNITY","S2","CONST", "NUMBERSYMBOL", "DASHSYMBOL","ENDERS","WORD"];
         var parser = recognizer._ctx.parser,
             tokens = parser.getTokenStream().tokens;
-        console.log(msg)
+        //console.log("err3",msg)
         // last token is always "fake" EOF token
         if (tokens.length > 1) {
+            //console.log("tokens", tokens.map(element => {return parser.symbolicNames[element.type]}));
             var lastToken = tokens[tokens.length - 2],
                 tokenType = parser.symbolicNames[lastToken.type];
             this.tokenType = tokenType;
-            //console.log(tokenType)
+            //console.log("tokentype",tokenType)
             if (typeAssistTokens.indexOf(tokenType) >= 0) {
                 this.partialFruit = lastToken.text;
                 const atn = parser._interp.atn;
                 let ctx = parser._ctx;
                 const s = atn.states[parser.state];
+                //console.log(ctx)
+                //console.log("rule", parser.ruleNames[s.ruleIndex])
                 let following = atn.nextTokens(s);
                 let text = tokens.slice(0,-1).reduce((accumulator, currentValue) => accumulator + currentValue.text, "")
                 let sg = sugest_for_token(
@@ -168,8 +194,8 @@ class TestGrammarErrorListener extends antlr4.error.ErrorListener {
                 
             }
         }else if (tokens.length == 1){
-            for(let sugestion in names){
-                let sug = names[sugestion];
+            for(let sugestion in starters){
+                let sug = starters[sugestion];
                 this.sugestions.push(sug);
             }
         }
@@ -188,7 +214,7 @@ class TestLexerErrorListener extends antlr4.error.ErrorListener {
 
     
     syntaxError(recognizer, offendingSymbol, line, column, msg, err) {
-        console.log(msg);
+        console.log("err1",msg);
         this.errors.push(arguments);
         /*let sugest = recognizer._input.strdata
         let error = sugest.substr(err.startIndex, recognizer._input.index).trim()
@@ -222,11 +248,11 @@ export function get_sugestions(s) {
     parser.addErrorListener(el);
     parser.buildParseTrees = true;
     const tree = parser.addess();
-    console.log(parser)
+    //console.log(parser)
     return {
         "sugestions":lex.sugestions.concat(el.sugestions),
-        "errors":parser._syntaxErrors == 0
+        "success":parser._syntaxErrors == 0
     }
 }
 
-//get_sugestions("Diagonal 96a # 5 - 17 Este")
+console.log("sug", get_sugestions("Diagonal 96a # 5a - 15 Este Terraza \"as"))
