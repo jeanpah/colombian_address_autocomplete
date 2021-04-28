@@ -249,5 +249,6 @@ export function get_sugestions(s) {
 
     
 }
-let test = "Diagonal 96a # 5a - 15 Este Terraza \"Hola Carebola\" Administración \"segunda\"";
-console.log("sug", get_sugestions(test))
+
+//let test = "Diagonal 96a # 5a - 15 Este Terraza \"Hola Carebola\" Administración \"segunda\"";
+//console.log("sug", get_sugestions(test))
