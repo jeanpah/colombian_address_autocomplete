@@ -2,107 +2,15 @@ import antlr4 from 'antlr4';
 import colombian_direction_grammarLexer from './colombian_direction_grammarLexer.js';
 import colombian_direction_grammarParser from './colombian_direction_grammarParser.js';
 import colombian_direction_grammarListener from './colombian_direction_grammarListener.js';
-/*
-import autosuggest from 'antlr4-autosuggest';
+import {starters, enders, names, find_token_replacement} from "./dictionaries.js";
 
-const sug = new autosuggest.autosuggester(colombian_direction_grammarLexer, colombian_direction_grammarParser, "LOWER");
-let suggestions = sug.autosuggest(s);
-
-console.log(suggestions)
-
-*/
-
-var starters = [
-    'Avenida Calle',
-    'Avenida Carrera',
-    'Calle',
-    'Carrera',
-    'Carretera',
-    'Diagonal',
-    'Transversal'
-];
-
-var enders = [
-    'Este',
-    'Norte',
-    'Oeste',
-    'Sur'
-];
-
-var names = [
-    'Administración',
-    'Aeropuerto',
-    'Agrupación',
-    'Altillo',
-    'Apartamento',
-    'Autopista',
-    'Barrio',
-    'Bloque',
-    'Bodega',
-    'Bulevar',
-    'Casa',
-    'Célula',
-    'Centro Comercial',
-    'Circular',
-    'Circunvalar',
-    'Ciudadela',
-    'Conjunto Residencial',
-    'Consultorio',
-    'Cuentas Corridas',
-    'Deposito',
-    'Deposito Sótano',
-    'Edificio',
-    'Entrada',
-    'Esquina',
-    'Etapa',
-    'Estación',
-    'Exterior',
-    'Finca',
-    'Garaje',
-    'Garaje Sótano',
-    'Interior',
-    'Kilómetro',
-    'Local',
-    'Local Mezzanine',
-    'Lote',
-    'Manzana',
-    'Mezzanine',
-    'Módulo',
-    'Oficina',
-    'Parque',
-    'Parqueadero',
-    'Pasaje',
-    'Paseo',
-    'Peatonal',
-    'Pent-House',
-    'Piso',
-    'Planta',
-    'Predio',
-    'Portería',
-    'Puesto',
-    'Round Point',
-    'Semisótano',
-    'Sótano',
-    'Sector',
-    'Suite',
-    'Supermanzana',
-    'Terraza',
-    'Torre',
-    'Troncal',
-    'Unidad',
-    'Unidad Residencial',
-    'Urbanización',
-    'Variante',
-    'Vía',
-    'Zona',
-]
 
 function printobj(object){
     var output = '';
     for (var property in object) {
     output += property + ': ' + object[property]+'; ';
     }
-    console.log("err2",output);
+    //console.log("err2",output);
 }
 
 function sugest_for_token(t, str){
@@ -111,7 +19,7 @@ function sugest_for_token(t, str){
     let sugest = [];
     for(var i = 0;i<f_tok.length ; i++){
         let token = f_tok[i];
-        console.log("TOKEN:", typeof token, token)
+        //console.log("TOKEN:", typeof token, token)
         if (token == "S2"){
             sugest = sugest.concat([str + "␣"])
         }else if (token == "BIS"){
@@ -202,7 +110,113 @@ class TestGrammarErrorListener extends antlr4.error.ErrorListener {
     }
 }
 
+class DianTranslator extends colombian_direction_grammarListener {
+    constructor() {
+        super();
+        this.output = "";
+    }
+    exitAddess(ctx) {
+        //find_token_replacement()
+        //ctx.children[0].getText()
+        let parser = ctx.parser;
+        for (let child_index in ctx.children){
+            
+            let symbol = ctx.children[child_index].symbol
+            if(symbol === undefined){
+                //console.log("addes",ctx.output_partial);
+                this.output+=ctx.children[child_index].output
+            }else{
+                let type = parser.symbolicNames[ctx.children[child_index].symbol.type];
+                let text = ctx.children[child_index].getText();
+                if (type == "CONST"){
+                    this.output +=  text.replace(/[0-9]+/g, function (x) {
+                        return x+" ";
+                    }).toUpperCase();
+                }
+                else if (type == "BIS"){
+                    this.output +="BIS";
+                }
+                else if (type == "WORD"){
+                    this.output += text.replace(/\"\"/g,"").toUpperCase();
+                }
+                else if (type == "UNITY"){
+                    this.output += find_token_replacement(type, text);
+                }
+                else if (type == "ENDERS"){
+                    this.output += find_token_replacement(type, text);
+                }
+                else if (type == "STARTS"){
+                    this.output += find_token_replacement(type, text);
+                }
+                else if (type == "S2"){
+                    this.output += " ";
+                }
+                else if (type == "NUMBERSYMBOL"){
+                    this.output += "";
+                }
+                else if (type == "DASHSYMBOL"){
+                    this.output += "";
+                }
+                //console.log("addes", type, text);
+            }
+                
+        }
+        
+        this.output = this.output.replace(/ +/g," ");
+    }
+    exitExtra(ctx) {
 
+        let parser = ctx.parser;
+        ctx.output = "";
+        for (let child_index in ctx.children){
+            
+            let symbol = ctx.children[child_index].symbol
+            if(symbol === undefined){
+                //console.log("addes",ctx.output_partial);
+                ctx.output+=ctx.children[child_index].output
+            }else{
+                let type = parser.symbolicNames[ctx.children[child_index].symbol.type];
+                let text = ctx.children[child_index].getText();
+                //console.log(type, text)
+                if (type == "ENDERS"){
+                    ctx.output += find_token_replacement(type, text);
+                }else if (type == "S2"){
+                    ctx.output += " ";
+                }
+            }
+        }
+        
+    }
+    exitComplement(ctx) {
+        let parser = ctx.parser;
+        ctx.output = "";
+        for (let child_index in ctx.children){
+            
+            let symbol = ctx.children[child_index].symbol
+            if(symbol === undefined){
+                //console.log("addes",ctx.output_partial);
+                ctx.output+=ctx.children[child_index].output
+            }else{
+                let type = parser.symbolicNames[ctx.children[child_index].symbol.type];
+                let text = ctx.children[child_index].getText();
+                console.log(type,text);
+
+                if (type == "WORD"){
+                    ctx.output += text.replace(/[\"\"]/g,"").toUpperCase();
+                }
+                else if (type == "UNITY"){
+                    ctx.output += find_token_replacement(type, text);
+                }
+                else if (type == "S2"){
+                    ctx.output += " ";
+                }
+                //console.log(type,text);
+                
+            }
+        }
+        //console.log("complement ", ctx.output);
+    }
+}
 
 class TestLexerErrorListener extends antlr4.error.ErrorListener {
     constructor() {
@@ -214,23 +228,8 @@ class TestLexerErrorListener extends antlr4.error.ErrorListener {
 
     
     syntaxError(recognizer, offendingSymbol, line, column, msg, err) {
-        console.log("err1",msg);
+        //console.log("err1",msg);
         this.errors.push(arguments);
-        /*let sugest = recognizer._input.strdata
-        let error = sugest.substr(err.startIndex, recognizer._input.index).trim()
-        console.log(error)
-        let data = [];
-        names.forEach((elment)=>{
-            if(elment.indexOf(error)>-1){
-                data.push(elment)
-            }
-        })
-        for(let sugestion in data){
-            let sug = sugest.substr(0, err.startIndex) +data[sugestion]+ sugest.substr(recognizer._input.index, sugest.length);
-            this.sugestions.push(sug);
-        }
-        
-        this.errors.push(arguments);*/
     }
 }
 
@@ -248,11 +247,27 @@ export function get_sugestions(s) {
     parser.addErrorListener(el);
     parser.buildParseTrees = true;
     const tree = parser.addess();
+    //console.log(printer.output)
     //console.log(parser)
-    return {
-        "sugestions":lex.sugestions.concat(el.sugestions),
-        "success":parser._syntaxErrors == 0
+    let success = parser._syntaxErrors == 0;
+    if (!success){
+        return {
+            "sugestions":lex.sugestions.concat(el.sugestions),
+            "dian_format":null,
+            "success":success
+        }
+    }else{
+        const printer = new DianTranslator();
+        antlr4.tree.ParseTreeWalker.DEFAULT.walk(printer, tree);
+        return {
+            "sugestions":lex.sugestions.concat(el.sugestions),
+            "dian_format":printer.output,
+            "success":success
+        }
     }
-}
+    
 
-console.log("sug", get_sugestions("Diagonal 96a # 5a - 15 Este Terraza \"as"))
+    
+}
+let test = "Diagonal 96a # 5a - 15 Este Terraza \"Hola Carebola\" Administración \"segunda\"";
+console.log("sug", get_sugestions(test))

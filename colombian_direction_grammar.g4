@@ -2,9 +2,10 @@ grammar colombian_direction_grammar;
 addess : STARTS S2 CONST BIS? S2 NUMBERSYMBOL S2 CONST BIS? S2 DASHSYMBOL S2 CONST (S2 extra)?;
 extra: 
     ENDERS |
-    ENDERS complement+ ;
+    ENDERS S2 complement (S2 complement)* |
+    complement (S2 complement)*;
 
-complement : S2 UNITY S2 WORD;
+complement : UNITY S2 WORD;
 
 CONST:[0-9]+[a-z]?;
 BIS: 'BIS';
